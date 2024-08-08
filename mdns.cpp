@@ -326,8 +326,8 @@ void mdns::operator()()
 		mdns_buffer[ro++] = 0x00;  // 0 questions
 		mdns_buffer[ro++] = 0x00;
 
-		mdns_buffer[ro++] = 0x00;  // 3 answers
-		mdns_buffer[ro++] = 0x03;
+		mdns_buffer[ro++] = 0x00;  // 4 answers
+		mdns_buffer[ro++] = 0x04;
 
 		mdns_buffer[ro++] = 0x00;  // 0 authority rr
 		mdns_buffer[ro++] = 0x00;
