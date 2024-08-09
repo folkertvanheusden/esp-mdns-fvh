@@ -1,4 +1,4 @@
-This code shows how to send MDNS records every second.
+This code shows how to send MDNS records every second from an ESP32 (other platforms should be easy to adapt to as well).
 That way, you can do something like "ping myname.local".
 
 
