@@ -5,7 +5,7 @@
 #include "mdns.h"
 
 
-mdns *m = nullptr;
+mdns m;
 
 void setup() {
 	Serial.begin(115200);
@@ -19,9 +19,8 @@ void setup() {
 		delay(100);
 	}
 
-	m = new mdns();
-	m->add_name(80, "myname._http._tcp.local");  // TODO adjust this
-	m->begin();
+	m.add_name(80, "myname._http._tcp.local");  // TODO adjust this
+	m.begin();
 
 	Serial.println(F("Go!"));
 }
