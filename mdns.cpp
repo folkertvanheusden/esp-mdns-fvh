@@ -255,9 +255,7 @@ static uint16_t add_nsec(uint8_t *const tgt, const std::vector<std::string> & na
 	return o;
 }
 
-mdns::mdns(const int port, const std::string & host) :
-	port(port),
-	hostname(host)
+mdns::mdns()
 {
 }
 
@@ -270,6 +268,12 @@ mdns::~mdns()
 
 	th->join();
 	delete th;
+}
+
+void mdns::add_name(const int port, const std::string & host)
+{
+	std::unique_lock<std::mutex> lck(names_lock);
+	names.push_back({ port, host });
 }
 
 bool mdns::begin()
@@ -314,51 +318,54 @@ void mdns::operator()()
 
 		last = now;
 
-		uint8_t  mdns_buffer[256] { 0 };
-		uint16_t ro               { 0 };
+		std::unique_lock<std::mutex> lck(names_lock);
+		for(auto & entry: names) {
+			uint8_t  mdns_buffer[256] { 0 };
+			uint16_t ro               { 0 };
 
-		mdns_buffer[ro++] = 0x00;  // transaction id
-		mdns_buffer[ro++] = 0x00;
+			mdns_buffer[ro++] = 0x00;  // transaction id
+			mdns_buffer[ro++] = 0x00;
 
-		mdns_buffer[ro++] = 0x84;  // standard query response, no error
-		mdns_buffer[ro++] = 0x00;
+			mdns_buffer[ro++] = 0x84;  // standard query response, no error
+			mdns_buffer[ro++] = 0x00;
 
-		mdns_buffer[ro++] = 0x00;  // 0 questions
-		mdns_buffer[ro++] = 0x00;
+			mdns_buffer[ro++] = 0x00;  // 0 questions
+			mdns_buffer[ro++] = 0x00;
 
-		mdns_buffer[ro++] = 0x00;  // 4 answers
-		mdns_buffer[ro++] = 0x04;
+			mdns_buffer[ro++] = 0x00;  // 4 answers
+			mdns_buffer[ro++] = 0x04;
 
-		mdns_buffer[ro++] = 0x00;  // 0 authority rr
-		mdns_buffer[ro++] = 0x00;
-		
-		mdns_buffer[ro++] = 0x00;  // 0 additional rr
-		mdns_buffer[ro++] = 0x00;
+			mdns_buffer[ro++] = 0x00;  // 0 authority rr
+			mdns_buffer[ro++] = 0x00;
+			
+			mdns_buffer[ro++] = 0x00;  // 0 additional rr
+			mdns_buffer[ro++] = 0x00;
 
-		std::string work      = hostname;
-		std::size_t last_char = work.size() - 1;
+			std::string work      = entry.second;
+			std::size_t last_char = work.size() - 1;
 
-		if (work[last_char] == '.')
-			work.erase(last_char);
+			if (work[last_char] == '.')
+				work.erase(last_char);
 
-		auto name = split(work, ".");
+			auto name = split(work, ".");
 
-		// PTR record
-		ro += add_ptr(&mdns_buffer[ro], name);
+			// PTR record
+			ro += add_ptr(&mdns_buffer[ro], name);
 
-		// TXT record
-		ro += add_txt(&mdns_buffer[ro], name);
+			// TXT record
+			ro += add_txt(&mdns_buffer[ro], name);
 
-		// SRV record
-		ro += add_srv(&mdns_buffer[ro], name, port);
+			// SRV record
+			ro += add_srv(&mdns_buffer[ro], name, entry.first);
 
-		auto src_addr = WiFi.localIP();
+			auto src_addr = WiFi.localIP();
 
-		// A record for the hostname to the ip-address
-		uint8_t a[] = { src_addr[0], src_addr[1], src_addr[2], src_addr[3] };  // don't ask
-		ro += add_a(&mdns_buffer[ro], name, a);
+			// A record for the hostname to the ip-address
+			uint8_t a[] = { src_addr[0], src_addr[1], src_addr[2], src_addr[3] };  // don't ask
+			ro += add_a(&mdns_buffer[ro], name, a);
 
-		if (sendto(fd, mdns_buffer, ro, 0, reinterpret_cast<sockaddr *>(&to_addr), sizeof to_addr) != ro)
-			printf("xmit error\n");
+			if (sendto(fd, mdns_buffer, ro, 0, reinterpret_cast<sockaddr *>(&to_addr), sizeof to_addr) != ro)
+				printf("xmit error\n");
+		}
 	}
 }

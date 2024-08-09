@@ -19,7 +19,8 @@ void setup() {
 		delay(100);
 	}
 
-	m = new mdns(80, "myname._http._tcp.local");  // TODO adjust this
+	m = new mdns();
+	m->add_name(80, "myname._http._tcp.local");  // TODO adjust this
 	m->begin();
 
 	Serial.println(F("Go!"));
