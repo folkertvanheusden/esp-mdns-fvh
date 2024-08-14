@@ -1,0 +1,43 @@
+{
+  "name": "esp-mdns-fvh",
+  "version": "1.0",
+  "description": "A simple MDNS announcer/transmitter for the ESP32 (Arduino) allowing you to access your esp via espname.local. This is a different implementation from the one included in Arduino.",
+  "keywords": "wifi, esp32, MDNS",
+  "headers": ["mdns.h"],
+  "examples": [
+    {
+        "name": "example.ino",
+        "base": "",
+        "files": [ "example.ino" ]
+    }
+  ],
+  "export": {
+    "include":
+    [
+	    "LICENSE",
+	    "README.md",
+	    "example.ino",
+	    "mdns.cpp",
+	    "mdns.h",
+	    "platformio.ini"
+    ]
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/folkertvanheusden/esp-mdns-fvh/"
+  },
+  "authors":
+  [
+    {
+      "name": "Folkert van Heusden",
+      "email": "mail@vanheusden.com",
+      "url": "https://vanheusden.com/",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/folkertvanheusden/esp-mdns-fvh/",
+  "frameworks": "Arduino",
+  "platforms": ["espressif32"]
+}
